@@ -1,8 +1,10 @@
 
 import ctypes
+from pathlib import Path
 
 # Load our compiled C shared library
-lib = ctypes.CDLL("./libnumeric.so")
+library_path = Path(__file__).resolve().parent / "libnumeric.so"
+lib = ctypes.CDLL(str(library_path))
 
 # Using ctypes.c_double translates Python's decimal numbers into the exact binary format our
 #  C function needs to read and modify them properly.
