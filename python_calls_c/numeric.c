@@ -5,9 +5,72 @@
 #include "numeric.h"
 
 
+/*
+ * Applies an affine transformation to a single number.
+ *
+ * Formula: result = (x * scale) + offset
+ *
+ * Parameters:
+ *   x      - Input number to transform.
+ *   scale  - Multiplication factor.
+ *   offset - Value added after multiplication.
+ *
+ * Returns:
+ *   The transformed number.
+ */
 double affine(double x, double scale, double offset)
 {
     return x * scale + offset;
+}
+
+
+/*
+ * Applies an affine transformation to every element in an array.
+ *
+ * Formula: output[i] = (input[i] * scale) + offset
+ *
+ * Parameters:
+ *   input  - Array containing the original numbers.
+ *   n      - Number of elements in the input array.
+ *   scale  - Multiplication factor.
+ *   offset - Value added after multiplication.
+ *   output - Array where the transformed numbers are stored.
+ *            The caller must provide enough space for n doubles.
+ *
+ * Returns:
+ *   NUMERIC_OK    - Transformation completed successfully.
+ *   NUMERIC_EINVAL - Invalid input or output pointer.
+ *
+ * Memory:
+ *   Does not allocate or free memory. The caller owns both arrays.
+ */
+int affine_array(
+    const double *input,
+    size_t n,
+    double scale,
+    double offset,
+    double *output
+)
+{
+    // An empty array is valid; there is nothing to transform.
+    if (n == 0)
+    {
+        return NUMERIC_OK;
+    }
+
+    // Both pointers must be valid when processing at least one element.
+    if (input == NULL || output == NULL)
+    {
+        return NUMERIC_EINVAL;
+    }
+
+    // Transform each element and store the result in the output array.
+    for (size_t i = 0; i < n; i++)
+    {
+        output[i] = affine(input[i], scale, offset);
+    }
+
+    return NUMERIC_OK;
 }
 
 void scale_in_place(double *values, size_t n, double factor)

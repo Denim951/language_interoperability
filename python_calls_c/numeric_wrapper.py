@@ -10,6 +10,15 @@ lib = ctypes.CDLL(str(library_path))
 lib.affine.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
 lib.affine.restype = ctypes.c_double
 
+lib.affine_array.argtypes = [
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_size_t,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double)
+]
+lib.affine_array.restype = ctypes.c_int
+
 lib.scale_in_place.argtypes = [
     ctypes.POINTER(ctypes.c_double),
     ctypes.c_size_t, # In C, size_t is an unsigned integer (meaning it can only hold zero or positive numbers), it tells Python to pass the second argument as a positive integer
@@ -78,6 +87,59 @@ lib.numeric_free.argtypes = [
     ctypes.POINTER(ctypes.c_double),
 ]
 lib.numeric_free.restype = None
+
+def affine(value, scale, offset):
+    # Call the C affine function on a single number: (value * scale) + offset.
+    # Because we set argtypes and restype earlier, ctypes handles the float conversion automatically.
+    return lib.affine(value, scale, offset)
+
+def affine_array(values, scale, offset):
+    """
+    Apply an affine transformation to an entire list using C.
+
+    Formula: result = (value * scale) + offset
+
+    Parameters:
+        values: List of numbers to transform.
+        scale: Multiplication factor.
+        offset: Value added after multiplication.
+
+    Returns:
+        A new Python list containing the transformed numbers.
+
+    Memory:
+        Creates temporary C arrays owned by this function.
+        Python manages their memory automatically.
+    """
+
+    # An empty list requires no C call.
+    if not values:
+        return []
+
+    # Convert the Python list into a C-compatible double array.
+    count = len(values)
+    # multiplying a ctypes type by an integer doesn't do math; ctypes overrides * to mean "make an array type of this exact length."
+    # (*values) instantiates that array type and populates it. The * unpacks your Python list so that values = [1.0, 2.0, 3.0] is passed as separate arguments
+    input_array = (ctypes.c_double * count)(*values)
+
+    # Allocate an output array for C to fill.
+    output_array = (ctypes.c_double * count)()
+
+    # Call the C function and capture its status code.
+    status = lib.affine_array(
+        input_array,
+        count,
+        scale,
+        offset,
+        output_array
+    )
+
+    # Raise an exception if C reports invalid arguments.
+    if status != 0:
+        raise ValueError(f"C affine_array failed with status {status}")
+
+    # Convert the C output array into a regular Python list.
+    return list(output_array)
 
 def summarize(values):
     array_type = ctypes.c_double * len(values)

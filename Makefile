@@ -8,7 +8,7 @@ PYTHON_INCLUDES = $(shell $(PYTHON_CONFIG) --includes)
 PYTHON_LDFLAGS = $(shell $(PYTHON_CONFIG) --embed --ldflags)
 
 # These are actions, not actual files
-.PHONY: all demo pipes python-c clean
+.PHONY: all demo pipes python-c test clean
 
 # Default target: build everything
 all: python_calls_c/libnumeric.so c_calls_python/embed_demo shell_pipes/producer
@@ -36,6 +36,10 @@ pipes: shell_pipes/producer
 # Run Python calling C
 python-c: python_calls_c/libnumeric.so
 	python3 python_calls_c/numeric_wrapper.py
+
+# Run unit tests
+test:
+	python3 -m unittest discover -s tests -v
 
 # Remove generated files
 clean:

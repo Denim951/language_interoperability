@@ -44,6 +44,14 @@ size_t summary_offset_mean(void);
 
 double affine(double x, double scale, double offset);
 
+int affine_array(
+    const double *input,
+    size_t n,
+    double scale,
+    double offset,
+    double *output
+);
+
 int mean_array(
     const double *values,
     size_t n,
