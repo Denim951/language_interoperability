@@ -138,21 +138,22 @@ def measure_performance(function, values, scale, offset, warmups=2, repetitions=
         "median": statistics.median(measurements),
         "minimum": min(measurements),
         "maximum": max(measurements),
+        "spread": max(measurements) - min(measurements), # the difference between the slowest and fastest repetitions.
     }
 
 def run_benchmarks():
     """
     Run all four benchmark approaches across the required input sizes.
 
-    Tests 10, 1,000, and 100,000 values using the same affine
-    transformation. Collects timing statistics for every approach.
+    Tests 10, 1,000, 100,000, and 1,000,000 values using the same
+    affine transformation. Collects timing statistics for every approach.
 
     Returns:
         A list of dictionaries containing benchmark results.
     """
 
     # Input sizes required by the assignment.
-    sizes = [10, 1_000, 100_000]
+    sizes = [10, 1_000, 100_000, 1_000_000]
 
     # Use identical transformation parameters for every approach.
     scale = 2.0
@@ -192,6 +193,7 @@ def run_benchmarks():
                 "median_seconds": timing["median"],
                 "minimum_seconds": timing["minimum"],
                 "maximum_seconds": timing["maximum"],
+                "spread_seconds": timing["spread"],
             })
 
             print(
@@ -215,7 +217,7 @@ def save_results_to_csv(results):
     """
 
     # Store the CSV beside this benchmark script.
-    output_path = Path(__file__).resolve().parent / "results.csv"
+    output_path = Path(__file__).resolve().parent / "results2.csv"
 
     # Use the keys from each result dictionary as CSV column headers.
     fieldnames = [
@@ -224,10 +226,11 @@ def save_results_to_csv(results):
         "median_seconds",
         "minimum_seconds",
         "maximum_seconds",
+        "spread_seconds"
     ]
 
     # Open the file in write mode and automatically close it afterward.
-    with output_path.open("w", newline="") as csv_file:
+    with output_path.open("w", newline="\n", encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
         # Write the column headers.

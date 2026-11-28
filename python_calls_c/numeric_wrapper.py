@@ -141,6 +141,58 @@ def affine_array(values, scale, offset):
     # Convert the C output array into a regular Python list.
     return list(output_array)
 
+def mean(values):
+    """
+    Calculate the arithmetic mean of a list using the C mean_array function.
+
+    Raises:
+        ValueError: If the input list is empty or C reports invalid arguments.
+    """
+    if not values:
+        raise ValueError("Cannot calculate the mean of an empty list")
+
+    array_type = ctypes.c_double * len(values)
+    c_values = array_type(*values)
+
+    result = ctypes.c_double()
+
+    status = lib.mean_array(
+        c_values,
+        len(values),
+        ctypes.byref(result)
+    )
+
+    if status != 0:
+        raise ValueError("C mean_array() failed")
+
+    return result.value
+
+def scale(values, factor):
+    """
+    Return a new list with every element multiplied by factor.
+
+    The original Python list is not modified.
+    """
+    if not values:
+        return []
+
+    array_type = ctypes.c_double * len(values)
+
+    c_input = array_type(*values)
+    c_output = array_type()
+
+    status = lib.scale_array(
+        c_input,
+        len(values),
+        factor,
+        c_output
+    )
+
+    if status != 0:
+        raise ValueError("C scale_array() failed")
+
+    return list(c_output)
+
 def summarize(values):
     array_type = ctypes.c_double * len(values)
     c_values = array_type(*values)

@@ -83,6 +83,41 @@ class TestNumeric(unittest.TestCase):
                 lambda x: 1 / x
             )
 
+    def test_mean_invalid_input_does_not_modify_output(self):
+        result = numeric.ctypes.c_double(123.0)
+
+        status = numeric.lib.mean_array(
+            None,
+            0,
+            numeric.ctypes.byref(result)
+        )
+
+        self.assertEqual(status, 1)
+        self.assertEqual(result.value, 123.0)
+
+    def test_scale_empty_null_pointers(self):
+        status = numeric.lib.scale_array(
+            None,
+            0,
+            3.0,
+            None
+        )
+
+        self.assertEqual(status, 0)
+
+    def test_scale_exact_in_place_alias(self):
+        values = (numeric.ctypes.c_double * 3)(2.0, 4.0, 6.0)
+
+        status = numeric.lib.scale_array(
+            values,
+            3,
+            3.0,
+            values
+        )
+
+        self.assertEqual(status, 0)
+        self.assertEqual(list(values), [6.0, 12.0, 18.0])
+
     def test_affine(self):
         result = numeric.lib.affine(3.0, 2.0, 1.0)
 
@@ -94,6 +129,28 @@ class TestNumeric(unittest.TestCase):
         result = numeric.affine_array(values, 2.0, 3.0)
 
         self.assertEqual(result, [5.0, 7.0, 9.0, 11.0])
+
+    def test_mean(self):
+        result = numeric.mean([2.0, 4.0, 6.0, 8.0])
+
+        self.assertEqual(result, 5.0)
+
+    def test_mean_empty(self):
+        with self.assertRaises(ValueError):
+            numeric.mean([])
+
+    def test_scale(self):
+        values = [2.0, 4.0, 6.0]
+
+        result = numeric.scale(values, 3.0)
+
+        self.assertEqual(result, [6.0, 12.0, 18.0])
+        self.assertEqual(values, [2.0, 4.0, 6.0])
+
+    def test_scale_empty(self):
+        result = numeric.scale([], 3.0)
+
+        self.assertEqual(result, [])
 
     def test_utf8_length(self):
         text = "cafē"

@@ -1,0 +1,11 @@
+# Python bytecode and cache directories
+__pycache__/
+*.py[cod]
+
+# Compiled C artifacts
+*.so
+c_calls_python/embed_demo
+shell_pipes/producer
+
+# Python virtual environment
+.venv/
